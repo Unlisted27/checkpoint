@@ -40,7 +40,7 @@ class Master_clock:
             o.frame_manager.on_frame()
 
 class Weapon:
-    def __init__(self, name:str, weight:int, damage:int, ammo_count:int, sustained_fire_rate:int=15, max_fire_rate:int=65):
+    def __init__(self, name:str, weight:int, damage:int, ammo_count:int, sustained_fire_rate:int, max_fire_rate:int, description:str=""):
         '''Fire rate is rounds per minute'''
         self.name = name
         self.weight = weight
@@ -48,6 +48,7 @@ class Weapon:
         self.ammo_count = ammo_count
         self.sustained_fire_rate = sustained_fire_rate
         self.max_fire_rate = max_fire_rate
+        self.description = description
 
 class Stat:
     def __init__(self,base_value:int):
@@ -85,40 +86,41 @@ class Soldier:
 class Vehicle:
     def __init__(self, model:str):
         self.model = model
-        self.frame_manager = frame_manager("Vehicle:"+self.model, shout=False)
+        self.frame_manager = frame_manager(self,self.model, shout=False)
 
 class Fireteam:
     '''Fireteam is a small unit, typically consisting of 2 soldiers.'''
     def __init__(self, team_name:str, members:list[Soldier]):
         self.team_name = team_name
         self.members = members
-        self.frame_manager = frame_manager("Fireteam:"+self.team_name, shout=True)
+        self.frame_manager = frame_manager(self,self.team_name, shout=True)
 
 class Group:
     '''Group is a larger unit consisting of multiple fireteams (4 soldiers).'''
     def __init__(self, team_name:str, fireteams:list[Fireteam]):
         self.team_name = team_name
         self.fireteams = fireteams
-        self.frame_manager = frame_manager("Group:"+self.team_name, shout=False)
+        self.frame_manager = frame_manager(self,self.team_name, shout=False)
 
 class Section:
     '''Section is a unit consisting of two groups (8 soldiers).'''
     def __init__(self, squad_name:str, groups:list[Group]):
         self.squad_name = squad_name
         self.groups = groups
-        self.frame_manager = frame_manager("Squad:"+self.squad_name, shout=True)
+        self.frame_manager = frame_manager(self,self.squad_name, shout=True)
 
 class PlatoonHQ:
     '''PlatoonHQ is the command unit of a platoon.'''
     def __init__(self, members:list[Soldier]):
         self.members = members
-        self.frame_manager = frame_manager("PlatoonHQ", shout=False)
+        self.frame_manager = frame_manager(self,"PlatoonHQ", shout=True)
 
 class Platoon:
     '''Platoon is a unit consisting of 3 sections, plus platoon HQ (~30 soldiers).'''
-    def __init__(self, platoon_name:str, sections:list[Section]):
+    def __init__(self, platoon_name:str, sections:list[Section], platoon_hq:PlatoonHQ):
         self.platoon_name = platoon_name
         self.sections = sections
-        self.frame_manager = frame_manager("Platoon:"+self.platoon_name, shout=True)
+        self.platoon_hq = platoon_hq
+        self.frame_manager = frame_manager(self,self.platoon_name, shout=True)
 
 

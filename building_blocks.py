@@ -9,10 +9,18 @@ clock = components.Master_clock()
 # ---> Squad 1
 
 class Weapons:
-    C7A2 = components.Weapon("C7A2", 4.58, 100, 30,15,65)
+    C7A2 = components.Weapon("C7A2", 4.58, 100, 30, 15, 65, "Standard issue assault rifle for infantry.")
+    C9A2 = components.Weapon("C9A2", 11.35, 100, 200, 50, 100, "Standard issue light machine gun.")
 
 class Roles:
     Rifleman = components.Role("Rifleman",Weapons.C7A2)
+    Section_commander = components.Role("Section Commander",Weapons.C7A2)
+    Section_2IC = components.Role("Section 2IC",Weapons.C7A2)
+    Anti_tank_Specialist = components.Role("Anti-tank Specialist",Weapons.C7A2)
+    Medic = components.Role("Medic",Weapons.C7A2)
+    Heavy_machine_gunner = components.Role("Heavy Machine Gunner",Weapons.C9A2)
+    Light_machine_Gunner = components.Role("Light Machine Gunner",Weapons.C9A2)
+    
 
 # Generators
 
@@ -79,7 +87,10 @@ def gen_platoon(clock:components.Master_clock,platoon_name:str="1"):
         section = components.Section(f"Section {platoon_name}{sectioni+1}", groups)
         clock.register(section)
         sections.append(section)
-    platoon = components.Platoon(f"Platoon {platoon_name}", sections)
+    platoon_hq_members = gen_soldiers(clock,6)
+    platoon_hq = components.PlatoonHQ(platoon_hq_members)
+    clock.register(platoon_hq)
+    platoon = components.Platoon(f"Platoon {platoon_name}", sections, platoon_hq)
     clock.register(platoon)
     return platoon
 
