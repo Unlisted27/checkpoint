@@ -4,9 +4,9 @@ clock = components.Master_clock()
 
 # The platoon
 # Structure:
-# Platoon -> Squads -> Teams -> Soldiers
+# Platoon -> Sections -> Teams -> Soldiers
 # Bravo platoon 2
-# ---> Squad 1
+# ---> Section 1
 
 class Weapons:
     C7A2 = components.Weapon("C7A2", 4.58, 100, 30, 15, 65, "Standard issue assault rifle for infantry.")
@@ -57,7 +57,8 @@ def genname():
         name = name_parts.start_sounds[random.randint(0,len(name_parts.start_sounds)-1)] + name_parts.middle_sounds[random.randint(0,len(name_parts.middle_sounds)-1)] + name_parts.end_sounds[random.randint(0,len(name_parts.end_sounds)-1)]
     return(name)
 
-def gen_soldiers(clock:components.Master_clock,count:int):
+# Friendly force generators
+def gen_soldiers(clock:components.Master_clock,count:int,rank="Private",role=Roles.Rifleman):
     soldiers = []
     for _ in range(count):
         import random
@@ -65,37 +66,113 @@ def gen_soldiers(clock:components.Master_clock,count:int):
         mobility = random.randint(1,10)
         vision = random.randint(1,10)
         mental_state = random.randint(1,10)
-        soldier = components.Soldier(name, mobility, vision, mental_state, "Private", Roles.Rifleman)
+        soldier = components.Soldier(name, mobility, vision, mental_state, rank, role)
         clock.register(soldier)
         soldiers.append(soldier)
     return soldiers
 
-def gen_platoon(clock:components.Master_clock,platoon_name:str="1"):
-    sections = []
-    for sectioni in range(3):
-        groups = []
-        team_names = ["Alpha", "Bravo", "Charlie", "Delta"]
-        for groupi in range(2):
-            teams = []
-            for teami in range(2):
-                team = components.Fireteam(f"Fireteam {platoon_name}{sectioni+1}{team_names[teami+groupi*2]}", gen_soldiers(clock,2))
-                clock.register(team)
-                teams.append(team)
-            group = components.Group(f"Group {platoon_name}{sectioni+1}{groupi+1}", teams)
-            clock.register(group)
-            groups.append(group)
-        section = components.Section(f"Section {platoon_name}{sectioni+1}", groups)
-        clock.register(section)
-        sections.append(section)
-    platoon_hq_members = gen_soldiers(clock,6)
-    platoon_hq = components.PlatoonHQ(platoon_hq_members)
-    clock.register(platoon_hq)
-    platoon = components.Platoon(f"Platoon {platoon_name}", sections, platoon_hq)
+def ft(name, soldiers):
+    return components.Fireteam(name, soldiers)
+
+def grp(name, fireteams):
+    return components.Group(name, fireteams)
+
+def create_section(clock: components.Master_clock, section_name: str):
+
+    # GROUP 1
+    ft_A = ft(f"{section_name}1A", [
+        gen_soldiers(clock, 1, "Sergeant", Roles.Section_commander)[0],  # FT leader / Sect Comd
+        gen_soldiers(clock, 1)[0],                                       # Rifleman
+        gen_soldiers(clock, 1)[0],                                       # Grenadier
+    ])
+
+    ft_B = ft(f"{section_name}1B", [
+        gen_soldiers(clock, 1, "Corporal")[0],                           # FT leader
+        gen_soldiers(clock, 1, role=Roles.Light_machine_Gunner)[0],
+    ])
+
+    group_1 = grp("Group 1", [ft_A, ft_B])
+
+    # GROUP 2
+    ft_C = ft(f"{section_name}2C", [
+        gen_soldiers(clock, 1, "Corporal", Roles.Section_2IC)[0],        # FT leader / 2IC
+        gen_soldiers(clock, 1, role=Roles.Light_machine_Gunner)[0],
+    ])
+
+    ft_D = ft(f"{section_name}2D", [
+        gen_soldiers(clock, 1, "Corporal")[0],                           # FT leader / 3IC
+        gen_soldiers(clock, 1)[0],
+        gen_soldiers(clock, 1)[0],
+    ])
+
+    group_2 = grp("Group 2", [ft_C, ft_D])
+
+    section = components.Section(section_name, [group_1, group_2])
+
+    # register unit clocks
+    clock.register(section)
+    clock.register(group_1)
+    clock.register(group_2)
+    for ftm in [ft_A, ft_B, ft_C, ft_D]:
+        clock.register(ftm)
+
+    return section
+
+def create_platoon_hq(clock: components.Master_clock):
+    members = [
+        gen_soldiers(clock, 1, "Lieutenant")[0],     # Platoon Commander
+        gen_soldiers(clock, 1, "Sergeant")[0],       # Platoon 2IC
+        gen_soldiers(clock, 1, "Corporal")[0],       # Signaller
+        gen_soldiers(clock, 1, "Corporal", Roles.Medic)[0],
+    ]
+
+    hq = components.PlatoonHQ(members)
+    clock.register(hq)
+    return hq
+
+def create_platoon(clock: components.Master_clock, name="Bravo Platoon 2"):
+    sections = [
+        create_section(clock, "1"),
+        create_section(clock, "2"),
+        create_section(clock, "3"),
+    ]
+
+    platoon_hq = create_platoon_hq(clock)
+
+    platoon = components.Platoon(name, sections, platoon_hq)
     clock.register(platoon)
+
     return platoon
 
+#Faction forces generation
+def gen_faction(clock:components.Master_clock,name:str=None,friendly:bool=False):
+    if name is None:
+        name = genname() + " faction"
+    compliance = random.randint(0,5) if friendly else random.randint(-5,0)  # Factions are generally hostile to occupation forces
+    faction = components.Faction(name,compliance)
+    clock.register(faction)
+    return faction
 
-platoon = gen_platoon(clock)
+def gen_militants(clock:components.Master_clock,count:int,role:components.Role,faction:components.Faction,region:components.Region):
+    militants = []
+    for _ in range(count):
+        name = genname()
+        mobility = random.randint(1,10)
+        vision = random.randint(1,10)
+        mental_state = random.randint(1,10)
+        attitude = random.randint(3,7) + faction.compliance # Remember, the lower the attitude, the more hostile they are
+        attitude += region.stability / 4 if faction.compliance > 0 else 0  # More stable regions produce less hostile militants
+        militant = components.Human(name,role,faction,mobility,vision,mental_state,attitude)
+        clock.register(militant)
+        militants.append(militant)
+    return militants
 
-#for soldier in alpha_team.members:
-    #print(f"Soldier {soldier.name}: Mobility={soldier.mobility.value}, Vision={soldier.vision.value}, Mental State={soldier.mental_state.value}")
+# Object creation
+# Friendly forces
+platoon = create_platoon(clock)
+
+# Faction forces
+class factions:
+    Resistance = gen_faction(clock, "Resistance", friendly=True)
+    Insurgents = gen_faction(clock, "Insurgents", friendly=False)
+

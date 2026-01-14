@@ -35,7 +35,7 @@ class Master_clock:
     def advance(self):
         """Advance the frame and notify observers."""
         self.frame += 1
-        print(f"--- Advancing to frame {self.frame} ---")
+        #print(f"--- Advancing to frame {self.frame} ---")
         for o in self.observers:
             o.frame_manager.on_frame()
 
@@ -93,7 +93,7 @@ class Fireteam:
     def __init__(self, team_name:str, members:list[Soldier]):
         self.team_name = team_name
         self.members = members
-        self.frame_manager = frame_manager(self,self.team_name, shout=True)
+        self.frame_manager = frame_manager(self,self.team_name, shout=False)
 
 class Group:
     '''Group is a larger unit consisting of multiple fireteams (4 soldiers).'''
@@ -107,13 +107,13 @@ class Section:
     def __init__(self, squad_name:str, groups:list[Group]):
         self.squad_name = squad_name
         self.groups = groups
-        self.frame_manager = frame_manager(self,self.squad_name, shout=True)
+        self.frame_manager = frame_manager(self,self.squad_name, shout=False)
 
 class PlatoonHQ:
     '''PlatoonHQ is the command unit of a platoon.'''
     def __init__(self, members:list[Soldier]):
         self.members = members
-        self.frame_manager = frame_manager(self,"PlatoonHQ", shout=True)
+        self.frame_manager = frame_manager(self,"PlatoonHQ", shout=False)
 
 class Platoon:
     '''Platoon is a unit consisting of 3 sections, plus platoon HQ (~30 soldiers).'''
@@ -121,6 +121,28 @@ class Platoon:
         self.platoon_name = platoon_name
         self.sections = sections
         self.platoon_hq = platoon_hq
-        self.frame_manager = frame_manager(self,self.platoon_name, shout=True)
+        self.frame_manager = frame_manager(self,self.platoon_name, shout=False)
 
+class Region:
+    def __init__(self, name:str, stability:int=0, compliance:int=0):
+        self.name = name
+        self.stability = stability  # Overall region stability, affects faction strength
+        self.compliance = compliance  # Overall region compliance, affects civillian compliance. Effectively the people's attitude towards the occupying force.
 
+class Faction:
+    def __init__(self, name:str, compliance:int=0):
+        self.name = name
+        self.compliance = compliance  # Overall faction compliance, affects member attitude
+
+class Human:
+    def __init__(self, name:str, role:Role, faction:Faction, mobility:int=5, vision:int=5, mental_state:int=5, attitude:int = 0):
+        self.name = name
+        self.role = role
+        self.faction = faction
+        self.mobility = Stat(mobility)
+        self.vision = Stat(vision)
+        self.mental_state = Stat(mental_state)
+        #The lower the attitude, the more hostile. This will determine their compliance with the checkpoint. Anti occupation factions will give a large debuff to their members' attitude which will make them more hostile.
+        self.attitude = self.faction.compliance + attitude 
+        self.injuries = []
+        self.frame_manager = frame_manager(self,self.name, shout=False)
