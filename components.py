@@ -1,7 +1,6 @@
 from datetime import datetime
 import random
 
-
 class frame_manager:
     def __init__(self, owner, name:str="", shout:bool=False):
         self.owner = owner
@@ -124,25 +123,39 @@ class Platoon:
         self.frame_manager = frame_manager(self,self.platoon_name, shout=False)
 
 class Region:
-    def __init__(self, name:str, stability:int=0, compliance:int=0):
+    def __init__(self, name:str, compliance:int=0, stability:int=0):
         self.name = name
-        self.stability = stability  # Overall region stability, affects faction strength
+        self.stability = stability  # Overall region stability, this affects how factions will later change their attitudes
         self.compliance = compliance  # Overall region compliance, affects civillian compliance. Effectively the people's attitude towards the occupying force.
-
+        
 class Faction:
     def __init__(self, name:str, compliance:int=0):
         self.name = name
-        self.compliance = compliance  # Overall faction compliance, affects member attitude
+        self.compliance:int = compliance  # Overall faction compliance, affects member attitude
+        self.members:list = []
+        self.manpower:int = 0
+        self.frame_manager = frame_manager(self,"a faction force", shout=False)
+    
+    def add_members(self, new_members:list['Human']):
+        for member in new_members:
+            self.members.append(member)
+            member.on_join_faction(self)
+        self.manpower = len(self.members)
 
 class Human:
-    def __init__(self, name:str, role:Role, faction:Faction, mobility:int=5, vision:int=5, mental_state:int=5, attitude:int = 0):
+    def __init__(self, name:str, role:Role, region:Region, mobility:int=5, vision:int=5, mental_state:int=5, attitude:int = 0):
         self.name = name
         self.role = role
-        self.faction = faction
+        self.region = region
+        self.faction = None
         self.mobility = Stat(mobility)
         self.vision = Stat(vision)
         self.mental_state = Stat(mental_state)
         #The lower the attitude, the more hostile. This will determine their compliance with the checkpoint. Anti occupation factions will give a large debuff to their members' attitude which will make them more hostile.
-        self.attitude = self.faction.compliance + attitude 
+        self.attitude = attitude + region.compliance
         self.injuries = []
         self.frame_manager = frame_manager(self,self.name, shout=False)
+    def on_join_faction(self, faction:Faction):
+        self.faction = faction
+        # Recalculate attitude based on faction compliance. If the faction is friendly, then the region attitude bonus (or debuff) also applies, but if the faction is hostile, the region compliance does not influence the person's attitude.
+        self.attitude = self.faction.compliance + self.attitude + self.region.compliance if self.faction.compliance > 0 else self.faction.compliance + self.attitude
