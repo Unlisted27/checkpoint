@@ -142,8 +142,9 @@ class Faction:
             member.on_join_faction(self)
         self.manpower = len(self.members)
 
-class Human:
-    def __init__(self, name:str, role:Role, region:Region, mobility:int=5, vision:int=5, mental_state:int=5, attitude:int = 0):
+class Human(Body):
+    def __init__(self, name:str, role:Role, region:Region, attitude:int = 0):
+        super().__init__()
         self.name = name
         self.role = role
         self.region = region
