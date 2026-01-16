@@ -92,10 +92,7 @@ def gen_soldiers(clock:components.Master_clock,count:int,rank="Private",role=sol
     for _ in range(count):
         import random
         name = genname()
-        mobility = random.randint(1,10)
-        vision = random.randint(1,10)
-        mental_state = random.randint(1,10)
-        soldier = components.Soldier(name, mobility, vision, mental_state, rank, role)
+        soldier = components.Soldier(name, rank, role)
         clock.register(soldier)
         soldiers.append(soldier)
     return soldiers
@@ -191,7 +188,7 @@ def gen_militants(clock:components.Master_clock,count:int,role:components.Role,r
         mental_state = random.randint(1,10)
         attitude = random.randint(-3,2) # Remember, the lower the attitude, the more hostile they are
         attitude += region.stability / 4  # More stable regions produce less hostile militants
-        militant = components.Human(name,role,region,mobility,vision,mental_state,attitude)
+        militant = components.Human(name,role,region,attitude)
         clock.register(militant)
         militants.append(militant)
     return militants

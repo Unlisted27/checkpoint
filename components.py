@@ -49,6 +49,7 @@ class Weapon:
         self.max_fire_rate = max_fire_rate
         self.description = description
 
+#Whats the point of a class that acts like an int? Its for storing a stat's base value and current value separately.
 class Stat:
     def __init__(self,base_value:int):
         self.base_value = base_value
@@ -58,20 +59,26 @@ class Stat:
     def decrease(self,amount:int):
         self.value -= amount
 
+class Body:
+    def __init__(self, mobility:int=random.randint(1,10), vision:int=random.randint(1,10), mental_state:int=random.randint(1,10)):
+        self.health = Stat(100)
+        self.blood_amount = Stat(100)  # percentage
+        self.mobility = Stat(mobility)
+        self.vision = Stat(vision)
+        self.mental_state = Stat(mental_state)
+        self.injuries = []
+
 class Role:
     def __init__(self, name:str, weapon:Weapon):
         self.name = name
         self.weapon = weapon
 
-class Soldier:
-    def __init__(self, name:str, mobility:int, vision:int, mental_state:int, rank:str, role:Role="Rifleman"):
+class Soldier(Body):
+    def __init__(self, name:str, rank:str, role:Role="Rifleman"):
+        super().__init__()
         self.name = name
-        self.mobility = Stat(mobility)
-        self.vision = Stat(vision)
-        self.mental_state = Stat(mental_state)
         role = role
         self.rank = rank
-        self.injuries = []
         self.frame_manager = frame_manager(
             owner=self,
             name=f"Soldier:{self.name}",
@@ -149,9 +156,6 @@ class Human(Body):
         self.role = role
         self.region = region
         self.faction = None
-        self.mobility = Stat(mobility)
-        self.vision = Stat(vision)
-        self.mental_state = Stat(mental_state)
         #The lower the attitude, the more hostile. This will determine their compliance with the checkpoint. Anti occupation factions will give a large debuff to their members' attitude which will make them more hostile.
         self.attitude = attitude + region.compliance
         self.injuries = []
