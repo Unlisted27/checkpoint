@@ -164,32 +164,3 @@ class Human(Body):
         self.faction = faction
         # Recalculate attitude based on faction compliance. If the faction is friendly, then the region attitude bonus (or debuff) also applies, but if the faction is hostile, the region compliance does not influence the person's attitude.
         self.attitude = self.faction.compliance + self.attitude + self.region.compliance if self.faction.compliance > 0 else self.faction.compliance + self.attitude
-
-# Checkpoint components
-class Obstacle:
-    def __init__(self, barrier_type:str, vehicle_stopping_power:int, human_stopping_power:int, climeable:bool, cover_value:int):
-        self.barrier_type = barrier_type # Just the name (ex: Concertina Wire)
-        self.vehicle_stopping_power = vehicle_stopping_power # How effective it is against vehicles, a value between 1 and 100. When a vehicle impacts, a random roll will be made to determine how damaged the vehicle and its occupants becomes.
-        self.human_stopping_power = human_stopping_power # How effective it is against humans, a value between 1 and 100. When a human attempts to breach, a random roll will be made to determine how injured they become.
-        self.climeable = climeable # Can humans climb over it? If this value is true, the stopping power now represents the time it takes to climb, but they will not be damaged.
-        self.cover_value = cover_value # How much cover it provides to humans behind it, a value between 0 and 100. While in a cover state, this value reduces the chance of getting hit, and incoming damage.
-        self.frame_manager = frame_manager(self,self.barrier_type, shout=False)
-
-class Serpentine():
-    def __init__(self):
-        self.obstacles = []
-        self.frame_manager = frame_manager(self,"Serpentine", shout=False)
-    def add_obstacles(self, obstacles:list[Obstacle]):
-        for obstacle in obstacles:
-            self.obstacles.append(obstacle)
-    def debug_show_obstacles(self):
-        for obstacle in self.obstacles:
-            print(f"Obstacle: {obstacle.barrier_type}")
-
-class Guardian_angels:
-    def __init__(self):
-        pass
-
-class Troop_positions():
-    def __init__(self):
-        pass

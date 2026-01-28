@@ -205,10 +205,3 @@ class factions:
     insurgents = gen_faction(clock, "Insurgents", friendly=False)
     resistance.add_members(gen_militants(clock, 20, militant_roles.Fighter, region1))
     insurgents.add_members(gen_militants(clock, 20, militant_roles.Fighter, region1))
-
-# Checkpoint creation
-concertina_wire = components.Obstacle("Concertina Wire",30,80,False,0)
-hesco_barrier = components.Obstacle("Hesco Barrier",90,60,True,100)
-serpentine = components.Serpentine()
-serpentine.add_obstacles([concertina_wire,hesco_barrier,concertina_wire,hesco_barrier])
-checkpoint_alpha = large_components.Checkpoint("Checkpoint Alpha",serpentine)

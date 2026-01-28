@@ -1,7 +1,1 @@
 import components
-
-class Checkpoint:
-    def __init__(self,name:str, serpentine:components.Serpentine,):
-        self.name = name
-        self.serpentine = serpentine
-        self.frame_manager = components.frame_manager(self,self.name, shout=False)
