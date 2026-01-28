@@ -12,3 +12,5 @@ while True:
         print("That's an average frame rate of", building_blocks.clock.frame / (components.datetime.now() - start_time).total_seconds(), "frames per second")
         print(f"The platoon commander is: {building_blocks.platoon.platoon_hq.members[0].rank} {building_blocks.platoon.platoon_hq.members[0].name}")
         input("Press Enter to continue...")
+        building_blocks.checkpoint_alpha.serpentine.debug_show_obstacles()
+        input("Press Enter to continue...")
