@@ -1,5 +1,67 @@
 from datetime import datetime
-import random
+import random, arcade
+
+# Constants
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+WINDOW_TITLE = "Checkpoint"
+
+draw_buffer = [] #Every sprite that will be drawn this frame
+
+# components.py (partial)
+from datetime import datetime
+import random, arcade
+
+# keep your draw_buffer here (module-level is fine for now)
+draw_buffer = []
+
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+WINDOW_TITLE = "Checkpoint"
+
+class GameView(arcade.Window):
+    def __init__(self, master_clock=None):
+        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, fullscreen=True)
+        self.background_color = arcade.csscolor.CORNFLOWER_BLUE
+
+        # The Master_clock instance that we will advance each on_update
+        # Pass it in from game.py to avoid circular imports.
+        self.master_clock = master_clock
+
+        # record start time for FPS/stats
+        self._start_time = datetime.now()
+        self._stopped_at_frame = None
+
+    def setup(self):
+        pass
+
+    def on_update(self, delta_time: float):
+        # Advance the Master_clock if provided
+        if self.master_clock is not None:
+            self.master_clock.advance()
+
+            # Example: stop after 1000 frames
+            if self.master_clock.frame == 1000:
+                # compute stats and print (you can also set a flag)
+                total_seconds = (datetime.now() - self._start_time).total_seconds()
+                print("Simulation paused at frame 1000")
+                print("Total simulation time:", total_seconds, "seconds")
+                print("Average FPS:", self.master_clock.frame / max(total_seconds, 1e-6))
+                self._stopped_at_frame = self.master_clock.frame
+
+                # Close the arcade window -> arcade.run() will return
+                arcade.close_window()
+
+    def on_draw(self):
+        self.clear()
+        # Draw sprites stored in module-level draw_buffer
+        for sprite in draw_buffer:
+            # draw using Sprite.draw()
+            if sprite is not None:
+                arcade.draw_sprite(sprite)
+        # Clear buffer after drawing
+        draw_buffer.clear()
+
 
 class frame_manager:
     def __init__(self, owner, name:str="", shout:bool=False):
@@ -20,7 +82,7 @@ class frame_manager:
         # call the owner's tick hook
         if hasattr(self.owner, "on_tick"):
             self.owner.on_tick(self.delta)
-
+        
 class Master_clock:
     def __init__(self):
         self.frame = 0
@@ -74,20 +136,38 @@ class Role:
         self.weapon = weapon
 
 class Soldier(Body):
-    def __init__(self, name:str, rank:str, role:Role="Rifleman"):
+    global draw_buffer
+    def __init__(self, name:str, rank:str, role:Role, sprite = None):
         super().__init__()
         self.name = name
-        role = role
+        self.role = role
         self.rank = rank
+        self.sprite = None  # Placeholder for graphical representation
         self.frame_manager = frame_manager(
             owner=self,
             name=f"Soldier:{self.name}",
             shout=False
         )    
-        def on_tick(self, delta: float):
-            pass
-            # this runs every frame
-            # movement, morale decay, AI thinking, etc.
+        # Variable to hold our texture for our player
+        self.texture = arcade.load_texture(
+            "textures/soldier_textures/soldier.jpg"
+        )
+
+        # Separate variable that holds the player sprite
+        if self.texture is not None:
+            self.sprite = arcade.Sprite(self.texture)
+            print(f"{self.name} - Texture loaded successfully!")
+        else:
+            print(f"{self.name} - Error loading texture!")
+        self.sprite.center_x = 64
+        self.sprite.center_y = 128
+    def on_tick(self, delta: float):     
+        #draw_buffer.append(self.sprite)  # Add soldier sprite to draw buffer each frame
+        if self.role.name == "Platoon Leader":
+            self.sprite.center_x += 100*delta  # Move right each frame
+            draw_buffer.append(self.sprite)  # Add soldier sprite to draw buffer each frame
+        # this runs every frame
+        # movement, morale decay, AI thinking, etc.
 
 class Vehicle:
     def __init__(self, model:str):

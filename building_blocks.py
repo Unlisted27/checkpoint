@@ -46,6 +46,9 @@ class soldier_roles:
     Medic = components.Role("Medic",soldier_weapons.C7A2)
     Heavy_machine_gunner = components.Role("Heavy Machine Gunner",soldier_weapons.C9A2)
     Light_machine_Gunner = components.Role("Light Machine Gunner",soldier_weapons.C9A2)
+    Platoon_commander = components.Role("Platoon Leader",soldier_weapons.C7A2)
+    Platoon_2IC = components.Role("Platoon 2IC",soldier_weapons.C7A2)
+    Platoon_signaller = components.Role("Platoon Signaller",soldier_weapons.C7A2)
     
 class militant_roles:
     Fighter = components.Role("Fighter",militant_weapons.AK47)
@@ -146,9 +149,9 @@ def create_section(clock: components.Master_clock, section_name: str):
 
 def create_platoon_hq(clock: components.Master_clock):
     members = [
-        gen_soldiers(clock, 1, "Lieutenant")[0],     # Platoon Commander
-        gen_soldiers(clock, 1, "Sergeant")[0],       # Platoon 2IC
-        gen_soldiers(clock, 1, "Corporal")[0],       # Signaller
+        gen_soldiers(clock, 1, "Lieutenant", soldier_roles.Platoon_commander)[0],     # Platoon Commander
+        gen_soldiers(clock, 1, "Sergeant", soldier_roles.Platoon_2IC)[0],       # Platoon 2IC
+        gen_soldiers(clock, 1, "Corporal", soldier_roles.Platoon_signaller)[0],       # Signaller
         gen_soldiers(clock, 1, "Corporal", soldier_roles.Medic)[0],
     ]
 
